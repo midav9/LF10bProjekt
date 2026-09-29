@@ -39,6 +39,17 @@ Zweck: Projekt nachbauen oder nach längerer Pause wieder aufnehmen.
 3. Bauen und starten (`mvn package` bzw. `java -jar ...`)
 4. Test: Meme anlegen, lesen, ändern (CRU)
 
+Beschreibung der Anwendung:
+Ein kleines **Java-Maven-Projekt** zu Lernzwecken um auf eine Datenbank zuzugreifen und sich Bilder ausgeben zu lassen.  
+Man soll sich im ersten Schritt ...
+- **nächstes Bild anzeigen**
+- **vorheriges Bild anzeigen**
+- **zufälliges Bild anzeigen**
+
+... lassen können
+
+Aufteilung in UI (Swing) und Backend (API). Die Bilder sind als Blobs hinterlegt.
+
 ### 3.3 SSH-Verbindung System 1 -> System 2
 1. Auf System 1: `ssh-keygen -t ed25519`
 2. `ssh-copy-id user@system2`
