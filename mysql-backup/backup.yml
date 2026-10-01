@@ -10,3 +10,22 @@
           rsync -avz
           /var/lib/mysql/memedb
           root@192.168.1.131:/srv/backup/memedb/{{ ansible_date_time.date }}_{{ ansible_date_time.time | replace(':', '-') }}-memedb
+      register: rsync_result
+      changed_when: true
+      failed_when: false
+
+    - name: Erfolgreiches Backup protokollieren
+      ansible.builtin.shell:
+        cmd: >
+          ssh root@192.168.1.131
+          'echo "{\"time\":\"{{ ansible_date_time.iso8601 }}\",\"status\":\"success\",\"message\":\"Backup erfolgreich durchgeführt\"}"
+          >> /srv/backup/backup.log'
+      when: rsync_result.rc == 0
+
+    - name: Backup-Fehler protokollieren
+      ansible.builtin.shell:
+        cmd: >
+          ssh root@192.168.1.131
+          'echo "{\"time\":\"{{ ansible_date_time.iso8601 }}\",\"status\":\"failed\",\"message\":\"Backup fehlgeschlagen\",\"return_code\":{{ rsync_result.rc }}}"
+          >> /srv/backup/backup.log'
+      when: rsync_result.rc != 0

@@ -1,0 +1,47 @@
+---
+- name: MySQL Memedb Restore
+  hosts: mysql
+  become: true
+
+  tasks:
+
+    - name: Neuestes Backup ermitteln
+      ansible.builtin.shell: >
+        ssh root@192.168.1.131
+        "ls -1dt /srv/backup/memedb/*-memedb/ | head -n 1"
+      register: latest_backup
+      changed_when: false
+
+    - name: Angezeigtes Backup
+      ansible.builtin.debug:
+        msg: "Verwende Backup: {{ latest_backup.stdout }}"
+
+    - name: MySQL stoppen
+      ansible.builtin.service:
+        name: mysql
+        state: stopped
+
+    - name: Vorhandene Datenbank sichern
+      ansible.builtin.command:
+        cmd: mv /var/lib/mysql/memedb /var/lib/mysql/memedb-before-restore/{{ ansible_date_time.date }}_{{ ansible_date_time.time | replace(':', '-') }}-memedb
+      args:
+        removes: /var/lib/mysql/memedb
+
+    - name: Neuestes Backup wiederherstellen
+      ansible.builtin.command:
+        cmd: >
+          rsync -avz
+          root@192.168.1.131:{{ latest_backup.stdout }}/memedb/
+          /var/lib/mysql/
+
+    - name: Besitzer korrigieren
+      ansible.builtin.file:
+        path: /var/lib/mysql
+        owner: mysql
+        group: mysql
+        recurse: true
+
+    - name: MySQL starten
+      ansible.builtin.service:
+        name: mysql
+        state: started
