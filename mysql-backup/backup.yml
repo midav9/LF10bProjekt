@@ -1,0 +1,12 @@
+- name: MySQL Backup
+  hosts: mysql
+  become: true
+
+  tasks:
+
+    - name: Backup erstellen
+      ansible.builtin.command:
+        cmd: >
+          rsync -avz
+          /var/lib/mysql/memedb
+          root@192.168.1.131:/srv/backup/memedb/{{ ansible_date_time.date }}_{{ ansible_date_time.time | replace(':', '-') }}-memedb
