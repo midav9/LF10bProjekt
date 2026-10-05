@@ -4,9 +4,9 @@
 Zweck: Projekt nachbauen oder nach längerer Pause wieder aufnehmen.
 
 ## 1. Überblick
-- System 1 (Produktiv, Laptop/Raspi): Java Frontend + Backend, MariaDB (memedb), cron, rsync
-- System 2 (Backup + Monitoring, Raspi/Laptop): Backup-DB-Dump, health.log, ELK-Stack
-- Ablauf: cron -> Dump erstellen -> rsync auf System 2 -> health.log schreiben -> ELK liest health.log
+- System 1 (Produktiv, Raspi): Java Frontend + Backend, MariaDB (memedb), Ansible, rsync + systemd (trigger)
+- System 2 (Backup + Monitoring, Laptop): Backup-DB-Dump, health.log, ELK-Stack (mit system agent (elastic agent))
+- Ablauf: systemd -> Dump erstellen -> rsync auf System 2 -> health.log schreiben -> ELK liest health.log <- agent stellt systemdaten bereit
 - Architektur: siehe draw.io (Architekturuebersicht_drawio.png)
 - Ziel-RTO: 30-60 min
 
@@ -16,15 +16,15 @@ Zweck: Projekt nachbauen oder nach längerer Pause wieder aufnehmen.
 ## 2. Voraussetzungen
 - 2 Linux-Systeme im selben Netzwerk (feste IPs oder Hostnamen notieren)
 - Je ein Benutzer mit sudo-Rechten
-- Pakete System 1: `openjdk-17-jre`, `mariadb-server`, `rsync`, `cron`, `openssh-client`
-- Pakete System 2: `rsync`, `openssh-server`, ELK (Elasticsearch, Logstash/Filebeat, Kibana), `mariadb-server` (nur für Restore-Tests)
-- Zugangsdaten (DB-User, Passwörter) NICHT ins Repo, sondern lokal notieren
+- Pakete System 1: `openjdk-17-jre`, `mariadb-server`, `rsync`, `ansible`, `openssh-client`
+- Pakete System 2: `rsync`, `openssh-server`, `docker` + `docker-compose` (ELK (Elasticsearch, Logstash/Filebeat, Kibana)), `mariadb-server` (nur für Restore-Tests), `elastic agent`
+- Zugangsdaten (DB-User, Passwörter, ssh-keys) NICHT ins Repo, sondern lokal notieren
 
 | Angabe | Wert |
 |---|---|
-| IP/Host System 1 | ... |
-| IP/Host System 2 | ... |
-| DB-Name / DB-User | memedb / ... |
+| IP/Host System 1 | 192.168.1.217 |
+| IP/Host System 2 | 192.168.1.131 |
+| DB-Name / DB-User | memedb / root |
 | Backup-Zielordner (System 2) | /srv/backup/memedb |
 | Log-Pfad (System 2) | /srv/backup/health.log |
 
@@ -71,7 +71,7 @@ Aufteilung in UI (Swing) und Backend (API). Die Bilder sind als Blobs hinterlegt
 5. Temporäre Dumps lokal löschen
 6. Skript ausführbar machen: `chmod +x backup.sh`, einmal manuell testen
 
-### 3.5 Automatisierung mit cron (System 1)
+### 3.5 Automatisierung mit systemd (System 1)
 1. `crontab -e`
 2. Beispiel (täglich 02:00): `0 2 * * * /home/user/backup.sh >> /var/log/backup_cron.log 2>&1`
 3. Nach dem ersten Lauf health.log auf System 2 prüfen
@@ -121,5 +121,5 @@ Aufteilung in UI (Swing) und Backend (API). Die Bilder sind als Blobs hinterlegt
 
 ## 8. Team
 - Person A: Java-App, DB-Anbindung, CRUD
-- Person B: Backup-Skript, cron, health.log, ELK
+- Person B: Backup-Skript, systemd, health.log, ELK
 - Gemeinsam: Umgebung, Doku/GitHub, Präsentation, Debugging
