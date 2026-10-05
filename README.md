@@ -10,6 +10,9 @@ Zweck: Projekt nachbauen oder nach längerer Pause wieder aufnehmen.
 - Architektur: siehe draw.io (Architekturuebersicht_drawio.png)
 - Ziel-RTO: 30-60 min
 
+<img width="1046" height="441" alt="261004_architecture drawio" src="https://github.com/user-attachments/assets/13c4c253-8a66-46b1-94f0-517b32407e88" />
+
+
 ## 2. Voraussetzungen
 - 2 Linux-Systeme im selben Netzwerk (feste IPs oder Hostnamen notieren)
 - Je ein Benutzer mit sudo-Rechten
